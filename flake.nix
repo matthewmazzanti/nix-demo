@@ -16,25 +16,7 @@
 
           pythonEnv = pkgs.python3.withPackages (ps: with ps; []);
 
-          demo-drv = ({ stdenv }: stdenv.mkDerivation {
-            name = "demo-pkg";
-            src = ./src;
-            buildInputs = [
-              pythonEnv
-            ];
-            buildCommand = ''
-              echo "#!${pythonEnv}" >> hello.py
-              cat $src/hello.py >> hello.py
-              chmod +x hello.py
-            '';
-
-            installCommand = ''
-              mkdir -p $out/bin
-              mv hello.py $out/bin
-            '';
-          });
-
-          demo-pkg = pkgs.callPackage demo-drv {};
+          demo-pkg = pkgs.callPackage ./default.nix {};
         in
         {
           defaultPackage = demo-pkg;
