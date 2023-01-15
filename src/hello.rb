@@ -1,1 +1,1 @@
-puts "Hello from Ruby!\n"
+puts "Hello from Ruby!"
