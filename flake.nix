@@ -1,5 +1,5 @@
 {
-  description = "my project description";
+  description = "nix polyglot demo";
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
