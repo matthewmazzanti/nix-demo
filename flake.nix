@@ -15,15 +15,11 @@
             inherit system;
           };
 
-          pythonEnv = pkgs.python3.withPackages (ps: with ps; [
-            termcolor
-          ]);
-
           demo-drv = ({ stdenv }: stdenv.mkDerivation {
             name = "demo-pkg";
             src = ./src;
             buildInputs = with pkgs; [
-              pythonEnv
+              python3
               ruby
               go
               rustc
@@ -38,7 +34,7 @@
               # Python
               python_file="$out/bin/python-hello"
               # Add our python environment to the shebang
-              echo "#!${pythonEnv}/bin/python" >> "$python_file"
+              echo "#!${pkgs.python3}/bin/python" >> "$python_file"
               cat "$src/hello.py" >> "$python_file"
               chmod +x "$python_file"
               echo "$python_file" >> "$all_file"
