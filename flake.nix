@@ -14,34 +14,50 @@
             inherit system;
           };
 
-          pythonEnv = pkgs.python3.withPackages (ps: with ps; []);
-
           demo-drv = ({ stdenv }: stdenv.mkDerivation {
             name = "demo-pkg";
             src = ./src;
             buildInputs = with pkgs; [
-              pythonEnv
+              python3
+              ruby
               go
               rustc
             ];
             buildCommand = ''
               mkdir -p $out/bin
 
+              all_file="$out/bin/all-hello"
+              echo "#!${pkgs.bash}/bin/bash" > "$all_file"
+              chmod +x "$all_file"
+
               # Python
-              # Python script builder, since I don't feel like learning setuptools again today
-              pyfile="$out/bin/python-hello"
-              echo "#!${pythonEnv}/bin/python" >> "$pyfile"
-              cat $src/hello.py >> "$pyfile"
-              chmod +x "$pyfile"
+              python_file="$out/bin/python-hello"
+              # Add our python enviornment to the shebang
+              echo "#!${pkgs.python3}/bin/python" >> "$python_file"
+              cat "$src/hello.py" >> "$python_file"
+              chmod +x "$python_file"
+              echo "$python_file" >> "$all_file"
+
+              # Ruby
+              ruby_file="$out/bin/ruby-hello"
+              # Add our ruby enviornment to the shebang
+              echo "#!${pkgs.ruby}/bin/ruby" >> "$ruby_file"
+              cat "$src/hello.rb" >> "$ruby_file"
+              chmod +x "$ruby_file"
+              echo "$ruby_file" >> "$all_file"
 
               # Go
+              go_file="$out/bin/go-hello"
               # Need to point some env vars to tmp to avoid build failures
               export GOCACHE="$TMPDIR/go-cache"
               export GOPATH="$TMPDIR/go"
-              go build -o $out/bin/go-hello $src/hello.go
+              go build -o "$go_file" "$src/hello.go"
+              echo "$go_file" >> "$all_file"
 
               # Rust
-              rustc $src/hello.rs -o $out/rust-hello
+              rust_file="$out/bin/rust-hello"
+              rustc -o "$rust_file" "$src/hello.rs"
+              echo "$rust_file" >> "$all_file"
             '';
           });
 
