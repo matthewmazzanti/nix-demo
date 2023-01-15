@@ -1,2 +1,1 @@
-from termcolor import cprint
-cprint("Hello from Python!", "blue")
+print("Hello from Python!")
