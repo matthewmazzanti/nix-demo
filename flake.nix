@@ -25,8 +25,6 @@
             buildInputs = with pkgs; [
               pythonEnv
               ruby
-            ];
-            nativeBuildInputs = with pkgs; [
               go
               rustc
             ];
