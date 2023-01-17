@@ -7,7 +7,8 @@
     let
       supportedSystems = [ "aarch64-darwin" "x86_64-linux" ];
       eachSystem = flake-utils.lib.eachSystem supportedSystems;
-    in eachSystem
+    in
+    eachSystem
       (system:
         let
           pkgs = import nixpkgs {
@@ -24,6 +25,8 @@
             buildInputs = with pkgs; [
               pythonEnv
               ruby
+            ];
+            nativeBuildInputs = with pkgs; [
               go
               rustc
             ];
@@ -55,7 +58,7 @@
               # Need to point some env vars to tmp to avoid build failures
               export GOCACHE="$TMPDIR/go-cache"
               export GOPATH="$TMPDIR/go"
-              go build -o "$go_file" "$src/hello.go"
+              go build -trimpath -o "$go_file" "$src/hello.go"
               echo "$go_file" >> "$all_file"
 
               # Rust
@@ -65,23 +68,22 @@
             '';
           });
 
-          demo-pkg = pkgs.callPackage demo-drv {};
+          demo-pkg = pkgs.callPackage demo-drv { };
 
-          demo-docker =
-            let
-              pkgsLinux = import nixpkgs {
-                system = "x86_64-linux";
-              };
-
-              demo-pkg = pkgsLinux.callPackage demo-drv {};
-
-              image = pkgs.dockerTools.buildImage {
-                name = "hello-nix";
-                config = {
-                  Cmd = [ "${demo-pkg}/bin/all-hello" ];
-                };
-              };
-            in image;
+          demo-docker = pkgs.dockerTools.buildImage {
+            name = "hello-nix";
+            # This is only needed for demo purposes!
+            /*
+            copyToRoot = pkgs.buildEnv {
+              name = "image-root";
+              paths = with pkgs; [ bashInteractive coreutils gnugrep tree less ];
+              pathsToLink = [ "/bin" ];
+            };
+            */
+            config = {
+              Cmd = [ "${demo-pkg}/bin/all-hello" ];
+            };
+          };
         in
         {
           packages = {
@@ -89,6 +91,7 @@
             docker = demo-docker;
           };
           devShells.default = with pkgs; mkShell {
+            buildInputs = [ nixpkgs-fmt nix-tree ];
             inputsFrom = [ demo-pkg ];
           };
         }
