@@ -66,9 +66,28 @@
           });
 
           demo-pkg = pkgs.callPackage demo-drv {};
+
+          demo-docker =
+            let
+              pkgsLinux = import nixpkgs {
+                system = "x86_64-linux";
+              };
+
+              demo-pkg = pkgsLinux.callPackage demo-drv {};
+
+              image = pkgs.dockerTools.buildImage {
+                name = "hello-nix";
+                config = {
+                  Cmd = [ "${demo-pkg}/bin/all-hello" ];
+                };
+              };
+            in image;
         in
         {
-          defaultPackage = demo-pkg;
+          packages = {
+            default = demo-pkg;
+            docker = demo-docker;
+          };
           devShells.default = with pkgs; mkShell {
             inputsFrom = [ demo-pkg ];
           };
